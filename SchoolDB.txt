@@ -1,0 +1,607 @@
+create table schoolreg
+(schoolid int primary key identity(10000,1),
+dname varchar(50),
+username varchar(50),
+password varchar(50),
+email varchar(50),
+role varchar(50),
+phone varchar(50),
+sname varchar(50),
+saddress varchar(400),
+state varchar(20),
+city varchar(30),
+zip varchar(10),
+created_date datetime)
+
+-------------------------------------------------------------------------------------------------------------------------------------------- 1
+create  procedure sp_schoolreg
+(@dname varchar(50),
+@username varchar(50),
+@password varchar(50),
+@email varchar(50),
+@role varchar(50),
+@phone varchar(50),
+@sname varchar(50),
+@saddress varchar(400),
+@state varchar(50),
+@city varchar(50),
+@zip varchar(50),
+@schoolid int output)
+as
+begin
+insert into schoolreg values(@dname,@username,@password,@email,@role,@phone,@sname,@saddress,@state,@city,@zip,GETDATE())
+SET @schoolid=SCOPE_IDENTITY()
+RETURN @schoolid
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------- 2
+
+create procedure sp_username
+as
+begin
+select username from schoolreg
+union
+select username from students
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------3
+
+
+create table teachers
+(teacherid int primary key identity(900000,1),
+ schoolid varchar(50),
+ password varchar (50),
+ name varchar(50),
+ role varchar(20),
+ email varchar(50),
+ status varchar(50),
+ created_at datetime)
+
+----------------------------------------------------------------------------------------------------------------------------------------------4
+ 
+ create table students
+ (applicationid int primary key identity(8000000,1),
+  username varchar(50),
+  password varchar (50),
+  name varchar(50),
+  role varchar(20),
+  email varchar(50),
+  phone varchar(50),
+  address varchar(400),
+  state varchar(50),
+  city varchar(50),
+  zip varchar(50),
+  schoolid int,
+  term varchar(50),
+  status varchar(20),  
+ created_at datetime)
+ 
+----------------------------------------------------------------------------------------------------------------------------------------------5
+ 
+create procedure sp_logindetails
+(@username varchar(50))
+ as
+ begin 
+   Declare @directorcount int
+   Declare @teachercount int
+   Declare @studentcount int
+     select @directorcount=COUNT(*) from schoolreg where username=@username 
+     select @teachercount= COUNT(*) from teachers where CONVERT(varchar(50), teacherid)=@username
+     select @studentcount= COUNT(*) from students where username=@username
+       if @directorcount>0
+		begin 
+		  select username as username,password as password,role as role,dname as name, sname as sname 
+		   from  schoolreg 
+		    where username=@username;
+		 end
+		 else if @teachercount>0
+		 begin
+		   select teacherid as username,password as password,role as role,name as name, 'N/A' as sname 
+		   from   teachers 
+		   where  CONVERT(varchar(50), teacherid)=@username;
+		 end
+		 else if @studentcount>0
+		 begin
+		   select username as username,password as password,role as role,name as name,'N/A' as sname 
+		   from   students 
+		   where  username=@username and status='APPROVED';
+		 end			
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------6
+
+create table term
+(strm varchar(50),
+sdate varchar(50),
+edate varchar(50),
+schoolid varchar(50),
+created_at datetime)
+
+-------------------------------------------------------------------------------------------------------------------------------------------7
+
+create procedure sp_term
+(@strm varchar(50),
+@sdate varchar(50),
+@edate varchar(50),
+@schoolid varchar(50))
+as
+begin
+insert into term values(@strm,@sdate,@edate,@schoolid,GETDATE())
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------8
+
+create procedure sp_getstrm
+(@schoolid varchar(50))
+as
+begin
+select strm from term where schoolid=@schoolid
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------9
+
+create procedure sp_gettermdetails
+(@schoolid varchar(50))
+as
+begin
+select * from term where schoolid=@schoolid
+end
+
+-----------------------------------------------------------------------------------------------------------------------------------------10
+
+create procedure sp_schooldetails
+(@username varchar(50))
+as
+begin
+select schoolid,saddress from schoolreg where username=@username
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------11
+
+create procedure sp_getteacherdetails
+(@schoolid varchar(50))
+as
+begin
+select teacherid,name,name+' ('+CONVERT(varchar(50), teacherid)+')' nameid,email,created_at from teachers where schoolid=@schoolid
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------12
+
+create  procedure sp_addteacher
+(@schoolid varchar(50),
+@password varchar(50),
+@name varchar(50),
+@role varchar(50),
+@email varchar(50),
+@status varchar(50),
+@teacherid int output)
+as
+begin
+insert into teachers values(@schoolid,@password,@name,@role,@email,@status,GETDATE())
+SET @teacherid=SCOPE_IDENTITY()
+RETURN @teacherid
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------13
+
+create  procedure sp_updateteacher
+(@schoolid varchar(50),
+ @teacherid varchar(50),
+ @name varchar(50),
+@email varchar(50))
+as
+begin
+update teachers set name=@name, email=@email 
+   where schoolid=@schoolid and teacherid=@teacherid
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------14
+
+create  procedure sp_deleteteacher
+(@schoolid varchar(50),
+ @teacherid varchar(50))
+as
+begin
+delete teachers  
+   where schoolid=@schoolid and teacherid=@teacherid
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------15
+
+create table courses
+(courseid int primary key identity(100,1),
+coursename varchar(50),
+strm varchar(20),
+seats int,
+enrollments int,
+status varchar(20),
+schoolid varchar(20),
+created_at datetime,
+cost varchar(20))
+
+-------------------------------------------------------------------------------------------------------------------------------------16
+create procedure sp_getCourses
+(@schoolid varchar(20))
+as
+begin
+select courseid, coursename, strm, seats, enrollments,cost, status,created_at from courses where schoolid=@schoolid
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------17
+create  procedure sp_addcourse
+(@coursename varchar(50),
+@strm varchar(20),
+@seats int,
+@cost varchar(30),
+@status varchar(20),
+@schoolid varchar(20),
+@courseid int output)
+as
+begin
+insert into courses values(@coursename,@strm,@seats,0,@status,@schoolid,GETDATE(),@cost)
+SET @courseid=SCOPE_IDENTITY()
+RETURN @courseid
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------18
+
+create procedure sp_updatecourse
+(@courseid varchar(20),
+@coursename varchar(50),
+@seats int,
+@cost varchar(50))
+as
+begin
+update courses set coursename=@coursename, seats=@seats, cost=@cost
+    where courseid=@courseid  
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------19
+
+create procedure sp_deletecourse
+(@courseid varchar(20))
+as
+begin
+delete courses
+    where courseid=@courseid  
+end
+
+------------------------------------------------------------------------------------------------------------------------------------20
+
+
+create procedure sp_getcoursesbyterm
+(@strm varchar(20),
+@schoolid varchar(20))
+as
+begin
+select courseid, coursename+' ('+CONVERT(varchar(50), courseid)+')' coursenameid from courses 
+  where strm=@strm and schoolid=@schoolid
+end 
+
+--------------------------------------------------------------------------------------------------------------------------------21
+
+create table assignteacher
+(teacherid varchar(30),
+ strm varchar(20),
+ courseid varchar(20),
+ schoolid varchar(20))
+
+---------------------------------------------------------------------------------------------------------------------------------22
+
+create procedure sp_assignteacher
+(@teacherid varchar(30),
+@strm varchar(20),
+@courseid varchar(20),
+@schoolid varchar(20))
+as
+begin
+insert into assignteacher values(@teacherid,@strm,@courseid,@schoolid)
+end
+
+--------------------------------------------------------------------------------------------------------------------------------23
+
+create procedure sp_getassignedteachers
+(@schoolid varchar(20))
+as
+begin
+select a.teacherid, a.name,b.courseid,b.coursename,c.strm
+  from teachers a, courses b, assignteacher c
+    where a.teacherid=c.teacherid and
+          b.courseid=c.courseid   and
+          c.schoolid=@schoolid
+end
+
+------------------------------------------------------------------------------------------------------------------------------24
+
+create  procedure sp_studentapplication
+(@username varchar(50),
+@password varchar(50),
+@name varchar(50),
+@email varchar(50),
+@phone varchar(50),
+@address varchar(400),
+@state varchar(50),
+@city varchar(50),
+@zip varchar(50),
+@schoolid varchar(20),
+@term varchar(20),
+@applicationid  int output)
+as
+begin
+insert into students values(@username,@password,@name,'S', @email,@phone,@address,@state,@city,@zip,@schoolid,@term,'OPEN',GETDATE())
+SET @applicationid=SCOPE_IDENTITY()
+RETURN @applicationid
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------25
+
+create procedure sp_getschoolnames
+as
+begin
+select sname,schoolid from schoolreg
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------26
+
+create procedure sp_getstudentapplications
+(@schoolid varchar(20))
+as
+begin
+select * from students where schoolid=@schoolid
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------27
+
+create procedure sp_approveapplication
+(@applicationid varchar(20))
+as
+begin
+update students set status='APPROVED' where applicationid=@applicationid
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------------30
+
+create procedure sp_rejectapplication
+(@applicationid varchar(20))
+as
+begin
+update students set status='REJECTED' where applicationid=@applicationid
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------31
+
+create procedure sp_getCourseassignedteachers
+(@teacherid varchar(20))
+as
+begin
+select a.teacherid, a.name,b.courseid,b.coursename,c.strm,b.seats,b.enrollments
+  from teachers a, courses b, assignteacher c
+    where a.teacherid=c.teacherid and
+          b.courseid=c.courseid   and         
+          c.teacherid=@teacherid
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------------32
+
+create procedure sp_getstrmbystudent
+(@username varchar(20))
+as
+begin
+select strm from term 
+  where sdate>= GETDATE() and 
+        schoolid= (select schoolid from students where username=@username)  
+ end 
+
+------------------------------------------------------------------------------------------------------------------------------------------------33
+
+create procedure sp_getsearchedcourses
+(@strm varchar(20),
+@username varchar(30))
+as 
+begin
+select a.courseid,a.coursename,b.teacherid,b.name,a.cost,a.seats,a.seats-a.enrollments enrollments
+  from courses a, teachers b, assignteacher c
+    where a.strm='Fall2018' and
+          a.courseid=c.courseid and
+          b.teacherid=c.teacherid and
+          a.schoolid=(select schoolid from students where username='dharma123') and
+          a.seats>a.enrollments
+ end
+
+-----------------------------------------------------------------------------------------------------------------------------------------------34
+
+create table enrollments
+(enrollmentid int primary key identity(100,1),
+username varchar(20),
+courseid varchar(20),
+teacherid varchar(20),
+amount varchar(20),
+status varchar(20),
+created_date datetime,
+grade varchar(20))
+
+----------------------------------------------------------------------------------------------------------------------------------------------35
+
+create procedure sp_enrollments
+(@username varchar(20),
+@courseid varchar(20),
+@teacherid varchar(20),
+@amount varchar(20),
+@enrollmentid int output)
+as
+begin
+insert into enrollments values(@username,@courseid,@teacherid,@amount,'ENROLLED',GETDATE(),'NA')
+update courses 
+  set enrollments=(select enrollments from courses where courseid=@courseid)+1
+    where courseid=@courseid
+SET @enrollmentid=SCOPE_IDENTITY()
+RETURN @enrollmentid
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------------36
+
+create procedure sp_getenrolledcourseids
+(@username varchar(20))
+as
+begin
+select courseid from enrollments where username=@username and status='ENROLLED'
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------------37
+
+create procedure sp_getenrolledcourses
+(@username varchar(20))
+as
+begin
+select e.enrollmentid,e.courseid,t.name,c.coursename,c.strm 
+  from  enrollments e, courses c,teachers t,assignteacher a
+   where e.courseid=c.courseid  and 
+         c.courseid=a.courseid  and
+         a.teacherid=t.teacherid and
+         e.username=@username
+end
+
+-----------------------------------------------------------------------------------------------------------------------------------------38
+
+create procedure sp_getenrolledcourses
+(@username varchar(20))
+as
+begin
+select e.enrollmentid,e.courseid,t.name,c.coursename,c.strm 
+  from  enrollments e, courses c,teachers t,assignteacher a
+   where e.courseid=c.courseid  and 
+         c.courseid=a.courseid  and
+         a.teacherid=t.teacherid and
+         e.username='dharma123' and
+         e.status='ENROLLED'
+end
+
+-----------------------------------------------------------------------------------------------------------------------------------------39
+
+create procedure sp_dropcourse
+(@eid varchar(20),
+@cid varchar(20))
+as
+begin 
+update enrollments set status='DROPPED' where enrollmentid=@eid
+update courses set enrollments=(select enrollments from courses where courseid=@cid)-1
+        where courseid=@cid
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------40
+
+create procedure sp_studentpayhistory
+(@username varchar(20))
+as
+begin
+select c.courseid,c.coursename,e.amount,e.created_date from courses c, enrollments e
+  where c.courseid=e.courseid and e.username=@username and e.status='ENROLLED'
+END
+
+----------------------------------------------------------------------------------------------------------------------------------------41
+
+create procedure sp_enrolledstudents
+(@teacherid varchar(20))
+as
+begin
+select s.applicationid,s.name,s.email,s.phone,c.courseid,c.coursename,c.strm from students s, enrollments e, courses c
+  where e.courseid=c.courseid and
+        e.username=s.username and
+        e.teacherid=@teacherid and
+        e.status='ENROLLED' 
+ end
+
+---------------------------------------------------------------------------------------------------------------------------------------42
+ 
+ create procedure sp_chagepassword
+ (@teacherid varchar(20),
+ @password varchar(30))
+ as
+ begin
+ update teachers set password=@password where teacherid=@teacherid
+ end
+
+---------------------------------------------------------------------------------------------------------------------------------------43
+
+create procedure sp_studentpayments
+(@schoolid varchar(20))
+as
+begin
+select s.applicationid,s.name,s.email,s.phone,c.courseid,c.coursename,c.strm, e.amount from students s, enrollments e, courses c
+  where e.courseid=c.courseid and
+        e.username=s.username and
+        c.schoolid=s.schoolid and
+        e.status='ENROLLED'   and      
+        c.schoolid=@schoolid
+ end
+
+---------------------------------------------------------------------------------------------------------------------------------------44
+
+create procedure sp_schooldetailsbyteacher
+(@username varchar(20))
+as
+begin
+select schoolid from teachers where teacherid=@username
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------45
+
+create procedure sp_getavailableterms
+(@schoolid varchar(20))
+as
+begin
+select strm from term where schoolid=@schoolid
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------46
+
+create procedure sp_getteacherCourses
+(@username varchar(20),
+@strm varchar(20))
+as
+begin
+select a.courseid,c.coursename,e.enrollments,a.strm   
+  from assignteacher a, 
+       courses c, 
+       (select courseid, COUNT(*) enrollments 
+          from enrollments where status='ENROLLED' group by courseid) e
+   where a.courseid=c.courseid
+     and a.courseid=e.courseid
+     and a.teacherid=@username
+     and a.strm=@strm
+ end
+
+-------------------------------------------------------------------------------------------------------------------------------------47
+
+create procedure sp_getstudents
+(@username varchar(20),
+@courseid varchar(20))
+as
+begin
+select s.applicationid,s.name,s.email,e.enrollmentid,e.grade from enrollments e, students s
+  where e.username=s.username
+   and  e.teacherid=@username
+   and  e.courseid=@courseid
+   and  e.status='ENROLLED'
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------48
+
+create procedure sp_addgrade
+(@eid varchar(20),
+@grade varchar(10))
+as
+begin
+update enrollments set grade=@grade where enrollmentid=@eid
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------49
+
+create procedure sp_getteacherids
+(@schoolid varchar(20))
+as
+begin
+select distinct teacherid from assignteacher where schoolid=@schoolid
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------50

@@ -1,0 +1,78 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="LoginRegister.master.cs" Inherits="LoginRegister" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>School Management System</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="font-awesome/css/font-awesome.css" rel="stylesheet" />    
+    <link href="css/animate.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+    <link href="css/plugins/dataTables/datatables.min.css" rel="stylesheet" />
+  
+    <style>
+        .pace .pace-progress {
+            background: #f0f0f1;
+        }
+
+        .noresize {
+            resize: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="page-wrapper" style="min-height: 322px;margin-left: 150px;margin-right: 150px;" class="gray-bg dashbard-1">
+            <div class="row border-bottom">
+                <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0; background-color: #1c84c6 !important;">
+                    <div class="navbar-header" style="width: 400px;">
+                        <a class="navbar-minimalize minimalize-styl-2 btn btn-warning visible-xs " href="#"><i class="fa fa-bars"></i></a>
+                        <h1 class="hidden-xs app-brand" style="display: inline; position: relative; top: 12px; color: white; font-size: 30px; margin-left: 28px; font-family: 'Times New Roman', Times, serif; font-weight: 300;">School Management System</h1>
+                        <h3 class="visible-xs-inline-block app-brand" style="display: inline; position: relative; top: 16px; color: white; font-size: 16px; font-family: 'Times New Roman', Times, serif;">School Management</h3>
+                    </div>
+                    <ul class="nav navbar-top-links navbar-right" style="margin-bottom:63px;">
+
+                        <li>
+                            
+                        </li>
+                    </ul>
+
+                </nav>
+            </div>
+
+            <div class="wrapper wrapper-content animated fadeInRight">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="ibox float-e-margins">
+
+                            <asp:ContentPlaceHolder ID="right" runat="server"></asp:ContentPlaceHolder>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+           <div class="footer" style="background-color: white">
+                <div class="pull-right" style="color:#1c84c6; font-family:'Times New Roman';font-size:medium;">
+                    <strong>Copyright</strong> School Management System &copy; 2017
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/jquery-2.1.1.js"></script>
+    <script src="js/bootstrap.min.js"></script>    
+    <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
+    <script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script type="text/javascript" src="js/plugins/datatables/datatables.min.js"></script>
+    <script src="js/inspinia.js"></script> 
+    <script src="js/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="js/pages/datatable.js"></script>
+
+</body>
+</html>
